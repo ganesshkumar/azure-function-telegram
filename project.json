@@ -1,0 +1,10 @@
+{
+  "frameworks": {
+    "net46":{
+      "dependencies": {
+        "Telegram.Bot": "14.3.0",
+        "Newtonsoft.Json": "11.0.0.0"
+      }
+    }
+   }
+}
