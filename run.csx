@@ -1,6 +1,5 @@
 using System.Net;
 using Telegram.Bot;
-
 public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, TraceWriter log)
 {
     log.Info("C# HTTP trigger function processed a request.");
@@ -10,28 +9,35 @@ public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, TraceW
         .FirstOrDefault(q => string.Compare(q.Key, "msg", true) == 0)
         .Value;
 
-    if (msg == null)
+    long recipientId = (long) Convert.ToInt64(
+        req.GetQueryNameValuePairs()
+            .FirstOrDefault(q => string.Compare(q.Key, "recipientId", true) == 0)
+            .Value
+    );
+
+    if (msg == null || recipientId == null)
     {
         // Get request body
         dynamic data = await req.Content.ReadAsAsync<object>();
         msg = data?.msg;
+        recipientId = data?.recipientId;
     }
 
-    if (msg == null)
+    if (msg == null || recipientId == null)
     {
-        return req.CreateResponse(HttpStatusCode.BadRequest, "Please pass a name on the query string or in the request body");
+        return req.CreateResponse(HttpStatusCode.BadRequest, "Please pass a msg and recipientId on the query string or in the request body");
     } 
     else
     {
-        await notify(msg);
+        await notify(msg, recipientId);
         return req.CreateResponse(HttpStatusCode.OK, "Hello " + msg);
     }
 }
 
-private static async Task<bool> notify(string msg) {
-    var bot = new TelegramBotClient(<string:bot_token>);
+private static async Task<bool> notify(string msg, long recipientId) {
+    var bot = new TelegramBotClient(<string:botToken>);
     await bot.GetMeAsync();
 
-    await bot.SendTextMessageAsync(<long:receiver_id>, msg);
+    await bot.SendTextMessageAsync(recipientId, msg);
     return true;
 } 
